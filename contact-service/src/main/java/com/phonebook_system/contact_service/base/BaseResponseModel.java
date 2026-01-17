@@ -1,5 +1,10 @@
 package com.phonebook_system.contact_service.base;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BaseResponseModel<T> {
 
     private boolean success;
@@ -62,23 +67,5 @@ public class BaseResponseModel<T> {
             return fault("Result not found");
         }
         return success(result);
-    }
-
-    // ---------- Getter & Setter ----------
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public String getErrorCode() {
-        return errorCode;
     }
 }
