@@ -1,3 +1,9 @@
 spring:
-  application:
-    name: contact-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/contactdb
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
