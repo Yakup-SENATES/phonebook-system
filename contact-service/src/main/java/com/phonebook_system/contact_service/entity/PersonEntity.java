@@ -1,27 +1,27 @@
 package com.phonebook_system.contact_service.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "t_person")
 @Getter
-@Service
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class PersonEntity {
     @Id
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
     private String firstName;
     private String lastName;
     private String company;
+
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ContactInfoEntity> contactInfoList = new HashSet<>();
 }
