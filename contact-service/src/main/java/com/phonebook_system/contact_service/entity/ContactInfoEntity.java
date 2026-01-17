@@ -35,12 +35,13 @@ public class ContactInfoEntity {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof ContactInfoEntity that)) return false;
-        return Objects.equals(id, that.id) && Objects.equals(person, that.person) && type == that.type && Objects.equals(value, that.value);
+        return Objects.equals(id, that.id) && type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, person, type, value);
+        return getClass().hashCode();
     }
 }
