@@ -1,10 +1,15 @@
-CREATE TABLE contact_info (
+-- V2: Create contact info table
+
+CREATE TABLE IF NOT EXISTS t_contact_info (
     id UUID PRIMARY KEY,
     person_id UUID NOT NULL,
-    type VARCHAR(30) NOT NULL,
-    content VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_person
+    type VARCHAR(50) NOT NULL,
+    value VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_contact_info_person
         FOREIGN KEY (person_id)
-        REFERENCES person(id)
-        ON DELETE CASCADE -- Kiþi silinirse iletiþim bilgileri de silinir
+        REFERENCES t_person(id)
+        ON DELETE CASCADE
 );
+
+CREATE INDEX idx_contact_info_person_id ON t_contact_info(person_id);
+CREATE INDEX idx_contact_info_type ON t_contact_info(type);
