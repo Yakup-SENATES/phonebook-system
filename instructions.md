@@ -53,6 +53,10 @@ Veri yapýsý olarak da:
 - Raporun Talep Edildiði Tarih
 - Rapor Durumu (Hazýrlanýyor, Tamamlandý)
 
+**NOT:** her kiþi eklendiðinde asenkron olarak bir t_report_status tablosuna uuid ve kiþi statusu eklenecek.
+kiþi ilk eklendiðinde PENDING status ile eklenecek. daha sonra rapor oluþtur end pointi çalýþtýrýldýðýnda status pending olanlar
+kafkaya id leri ile gönderilip ordan rapor servisinde rapor oluþturulup sonucunda da t_report_status tablosunda ilgili uuid li kayýt 
+statusu CREATED olarak güncellenecektir.
 
 **NOT:** Deðerlendirme ile ilgili beklentiler için *Teknik Beklentiler* bölümünü dikkatli okuyunuz.
 
