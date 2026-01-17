@@ -1,0 +1,117 @@
+####################################
+# IntelliJ IDEA
+####################################
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+####################################
+# Eclipse (olur da açýlýrsa)
+####################################
+.project
+.classpath
+.settings/
+.factorypath
+
+####################################
+# VS Code (opsiyonel)
+####################################
+.vscode/
+
+####################################
+# Java / JVM
+####################################
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+####################################
+# Maven
+####################################
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+dependency-reduced-pom.xml
+.buildNumber
+.mvn/timing.properties
+
+####################################
+# Gradle
+####################################
+.gradle/
+build/
+!gradle-wrapper.jar
+
+####################################
+# Lombok
+####################################
+lombok.config
+
+####################################
+# Test / Coverage
+####################################
+coverage/
+*.exec
+*.ec
+*.lcov
+jacoco*.exec
+jacoco*.xml
+
+####################################
+# Logs
+####################################
+logs/
+*.log
+log/
+
+####################################
+# Environment / Secrets
+####################################
+.env
+.env.*
+!.env.example
+
+####################################
+# OS files
+####################################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+####################################
+# Temporary / Backup files
+####################################
+*.swp
+*.swo
+*.tmp
+*.bak
+*.old
+*.orig
+
+####################################
+# IDE / Tool caches
+####################################
+.cache/
+.idea_modules/
+node_modules/   # frontend varsa
+
+####################################
+# Docker
+############################
