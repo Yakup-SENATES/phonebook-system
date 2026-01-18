@@ -76,8 +76,4 @@ public class PersonController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/report")
-    public ResponseEntity<Void> requestReport(){
-        return personService.requestReport();
-    }
 }

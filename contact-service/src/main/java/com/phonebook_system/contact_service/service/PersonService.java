@@ -7,16 +7,12 @@ import com.phonebook_system.contact_service.mapper.PersonMapper;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.request.CreatePersonRequest;
 import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
-import com.phonebook_system.contact_service.model.event.ReportRequestEvent;
 import com.phonebook_system.contact_service.model.response.*;
 import com.phonebook_system.contact_service.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +22,6 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final ContactService contactService;
     private final PersonMapper personMapper;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public BaseResponseModel<PersonResponse> createPerson(CreatePersonRequest request) {
@@ -95,14 +90,5 @@ public class PersonService {
     public BaseResponseModel<LocationStatsListResponse> getLocationStats() {
         LocationStatsListResponse locationStat = contactService.createLocationStat();
         return BaseResponseModel.resultToResponse(locationStat);
-    }
-
-    public ResponseEntity<Void> requestReport() {
-        ReportRequestEvent event = ReportRequestEvent.builder()
-                .reportId(UUID.randomUUID())
-                .requestDate(LocalDateTime.now())
-                .build();
-        kafkaTemplate.send("report-requests", event);
-        return ResponseEntity.ok().build();
     }
 }
