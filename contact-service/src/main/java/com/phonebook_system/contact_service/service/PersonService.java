@@ -4,6 +4,8 @@ import com.phonebook_system.contact_service.base.BaseResponseModel;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.PersonMapper;
+import com.phonebook_system.contact_service.model.exception.InvalidContactInfoException;
+import com.phonebook_system.contact_service.model.exception.PersonNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.request.CreatePersonRequest;
 import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
@@ -34,7 +36,7 @@ public class PersonService {
     @Transactional
     public BaseResponseModel<Void> deletePerson(UUID id) {
         PersonEntity person = personRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Person not found with id: " + id));
+                .orElseThrow(() -> new PersonNotFoundException(id));
         personRepository.delete(person);
         return BaseResponseModel.ok();
     }
@@ -42,7 +44,7 @@ public class PersonService {
     @Transactional
     public BaseResponseModel<PersonResponse> updatePerson(UUID id, UpdatePersonRequest request) {
         PersonEntity person = personRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Person not found with id: " + id));
+                .orElseThrow(() -> new PersonNotFoundException(id));
         personMapper.updateEntityFromRequest(request, person);
         PersonEntity updatedPerson = personRepository.save(person);
         PersonResponse response = personMapper.toResponse(updatedPerson);
@@ -61,7 +63,7 @@ public class PersonService {
     @Transactional(readOnly = true)
     public BaseResponseModel<PersonDetailResponse> getPersonDetails(UUID id) {
         PersonEntity person = personRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Person not found with id: " + id));
+                .orElseThrow(() -> new PersonNotFoundException(id));
         PersonDetailResponse response = personMapper.toDetailResponse(person);
         return BaseResponseModel.resultToResponse(response);
     }
@@ -69,7 +71,7 @@ public class PersonService {
     @Transactional
     public BaseResponseModel<ContactInfoResponse> addContactInfo(UUID personId, CreateContactInfoRequest request) {
         PersonEntity person = personRepository.findById(personId) // select
-                .orElseThrow(() -> new RuntimeException("Person not found with id: " + personId));
+                .orElseThrow(() -> new PersonNotFoundException(personId));
 
         ContactInfoResponse response = contactService.saveContactInfo(person, request);
         return BaseResponseModel.resultToResponse(response);
@@ -80,7 +82,7 @@ public class PersonService {
         ContactInfoEntity contactInfo = contactService.getContactInfo(contactId);
 
         if (!contactInfo.getPerson().getId().equals(personId)) {
-            throw new RuntimeException("Contact info does not belong to this person");
+            throw new InvalidContactInfoException("Contact info does not belong to this person");
         }
 
         contactService.deleteContactInfo(contactInfo);

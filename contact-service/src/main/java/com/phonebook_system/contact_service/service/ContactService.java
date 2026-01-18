@@ -3,6 +3,7 @@ package com.phonebook_system.contact_service.service;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.ContactInfoMapper;
+import com.phonebook_system.contact_service.model.exception.ContactInfoNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.response.ContactInfoResponse;
 import com.phonebook_system.contact_service.model.response.LocationStatsResponse;
@@ -32,7 +33,7 @@ public class ContactService {
 
     public ContactInfoEntity getContactInfo(UUID contactId) {
         return contactInfoRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Contact info not found with id: " + contactId));
+                .orElseThrow(() -> new ContactInfoNotFoundException(contactId));
     }
 
     public void deleteContactInfo(ContactInfoEntity contact) {
