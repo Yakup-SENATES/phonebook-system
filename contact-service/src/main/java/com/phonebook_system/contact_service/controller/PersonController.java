@@ -4,10 +4,7 @@ import com.phonebook_system.contact_service.base.BaseResponseModel;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.request.CreatePersonRequest;
 import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
-import com.phonebook_system.contact_service.model.response.ContactInfoResponse;
-import com.phonebook_system.contact_service.model.response.LocationStatsResponse;
-import com.phonebook_system.contact_service.model.response.PersonDetailResponse;
-import com.phonebook_system.contact_service.model.response.PersonResponse;
+import com.phonebook_system.contact_service.model.response.*;
 import com.phonebook_system.contact_service.service.PersonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -47,8 +43,8 @@ public class PersonController {
     }
 
     @GetMapping
-    public ResponseEntity<BaseResponseModel<List<PersonResponse>>> listPersons() {
-        BaseResponseModel<List<PersonResponse>> response = personService.listPersons();
+    public ResponseEntity<BaseResponseModel<PersonListResponse>> listPersons() {
+        BaseResponseModel<PersonListResponse> response = personService.listPersons();
         return ResponseEntity.ok(response);
     }
 
@@ -59,8 +55,8 @@ public class PersonController {
     }
 
     @GetMapping("/location-stats")
-    public ResponseEntity<BaseResponseModel<List<LocationStatsResponse>>> getLocationStats() {
-        BaseResponseModel<List<LocationStatsResponse>> response = personService.getLocationStats();
+    public ResponseEntity<BaseResponseModel<LocationStatsListResponse>> getLocationStats() {
+        BaseResponseModel<LocationStatsListResponse> response = personService.getLocationStats();
         return ResponseEntity.ok(response);
     }
 
@@ -78,5 +74,10 @@ public class PersonController {
             @PathVariable UUID contactId) {
         BaseResponseModel<Void> response = personService.removeContactInfo(personId, contactId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<Void> requestReport(){
+        return personService.requestReport();
     }
 }
