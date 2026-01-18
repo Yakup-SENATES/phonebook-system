@@ -11,6 +11,18 @@ services:
     volumes:
       - contact-db-data:/var/lib/postgresql/data
 
+  postgres-report:
+    image: postgres:17
+    container_name: postgres-report
+    environment:
+      POSTGRES_DB: reportdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - report-db-data:/var/lib/postgresql/data
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -35,3 +47,4 @@ services:
 
 volumes:
   contact-db-data:
+  report-db-data:
