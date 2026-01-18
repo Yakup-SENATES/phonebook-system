@@ -2,5 +2,6 @@ package com.phonebook_system.report_service.model;
 
 public enum ReportStatus {
     PREPARING,
-    FAILED, COMPLETED
+    FAILED,
+    COMPLETED
 }
