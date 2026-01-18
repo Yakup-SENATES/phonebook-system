@@ -35,7 +35,7 @@ public class ReportService {
     private String topic;
 
     @Transactional
-    public BaseResponseModel<ReportResponse> requestReport() {
+    public ReportResponse requestReport() {
         ReportEntity report = ReportEntity.builder()
                 .requestDate(LocalDateTime.now())
                 .status(ReportStatus.PREPARING)
@@ -51,22 +51,21 @@ public class ReportService {
 
         kafkaTemplate.send(topic, reportId.toString(), event);
 
-        return BaseResponseModel.success(reportMapper.toResponse(savedReport));
+        return reportMapper.toResponse(savedReport);
     }
 
     @Transactional(readOnly = true)
-    public BaseResponseModel<ReportListResponse> listReports() {
+    public ReportListResponse listReports() {
         List<ReportEntity> reports = reportRepository.findAll();
         List<ReportResponse> responseList = reportMapper.toResponseList(reports);
-        ReportListResponse response = ReportListResponse.builder().reportList(responseList).build();
-        return BaseResponseModel.success(response);
+        return ReportListResponse.builder().reportList(responseList).build();
     }
 
     @Transactional(readOnly = true)
-    public BaseResponseModel<ReportDetailResponse> getReportDetail(UUID id) {
+    public ReportDetailResponse getReportDetail(UUID id) {
         ReportEntity report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report not found with id: " + id));
-        return BaseResponseModel.success(reportMapper.toDetailResponse(report));
+        return reportMapper.toDetailResponse(report);
     }
 
     public void generateReport(ReportRequestEvent event) {

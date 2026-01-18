@@ -19,17 +19,17 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping("/request")
-    public ResponseEntity<BaseResponseModel<ReportResponse>> requestReport() {
+    public ResponseEntity<ReportResponse> requestReport() {
         return ResponseEntity.ok(reportService.requestReport());
     }
 
     @GetMapping("/list")
-    public ResponseEntity<BaseResponseModel<ReportListResponse>> listReports() {
+    public ResponseEntity<ReportListResponse> listReports() {
         return ResponseEntity.ok(reportService.listReports());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponseModel<ReportDetailResponse>> getReportDetail(@PathVariable UUID id) {
+    public ResponseEntity<ReportDetailResponse> getReportDetail(@PathVariable UUID id) {
         return ResponseEntity.ok(reportService.getReportDetail(id));
     }
 }
