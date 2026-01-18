@@ -7,6 +7,8 @@ import com.phonebook_system.report_service.entity.ReportEntity;
 import com.phonebook_system.report_service.mapper.ReportMapper;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
+import com.phonebook_system.report_service.model.exception.InvalidReportStateException;
+import com.phonebook_system.report_service.model.exception.ReportNotFoundException;
 import com.phonebook_system.report_service.model.response.*;
 import com.phonebook_system.report_service.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +66,7 @@ public class ReportService {
     @Transactional(readOnly = true)
     public ReportDetailResponse getReportDetail(UUID id) {
         ReportEntity report = reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Report not found with id: " + id));
+                .orElseThrow(() -> new ReportNotFoundException(id));
         return reportMapper.toDetailResponse(report);
     }
 
@@ -72,7 +74,7 @@ public class ReportService {
         log.info("Received report request for id: {}", event.getReportId());
 
         ReportEntity report = reportRepository.findById(event.getReportId())
-                .orElseThrow(() -> new RuntimeException("Report not found"));
+                .orElseThrow(() -> new ReportNotFoundException(event.getReportId()));
 
         // Idempotency guard
         if (report.getStatus() == ReportStatus.COMPLETED) {
@@ -86,7 +88,7 @@ public class ReportService {
 
             if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());
-                throw new IllegalStateException("Failed to get statistics");
+                throw new InvalidReportStateException("Failed to get statistics");
             }
 
             List<ReportDetailEntity> details =
@@ -108,6 +110,7 @@ public class ReportService {
 
         } catch (Exception e) {
             report.setStatus(ReportStatus.FAILED);
+            reportRepository.save(report);
             log.error("Error generating report for id: {}", event.getReportId(), e);
         }
     }

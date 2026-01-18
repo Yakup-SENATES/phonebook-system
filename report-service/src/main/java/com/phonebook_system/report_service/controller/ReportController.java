@@ -1,6 +1,5 @@
 package com.phonebook_system.report_service.controller;
 
-import com.phonebook_system.report_service.base.BaseResponseModel;
 import com.phonebook_system.report_service.model.response.ReportDetailResponse;
 import com.phonebook_system.report_service.model.response.ReportListResponse;
 import com.phonebook_system.report_service.model.response.ReportResponse;
