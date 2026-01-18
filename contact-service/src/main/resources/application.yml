@@ -3,7 +3,7 @@ spring:
     name: contact-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/phonebook_contact
+    url: jdbc:postgresql://localhost:5432/contactdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -12,10 +12,6 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   
   flyway:
     enabled: true
