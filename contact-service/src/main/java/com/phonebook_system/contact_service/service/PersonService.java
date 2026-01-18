@@ -74,12 +74,12 @@ public class PersonService {
 
     @Transactional
     public BaseResponseModel<ContactInfoResponse> addContactInfo(UUID personId, CreateContactInfoRequest request) {
-        PersonEntity person = personRepository.findById(personId)
+        PersonEntity person = personRepository.findById(personId) // select
                 .orElseThrow(() -> new RuntimeException("Person not found with id: " + personId));
 
         ContactInfoEntity contactInfo = contactInfoMapper.toEntity(request);
         contactInfo.setPerson(person);
-        ContactInfoEntity savedContactInfo = contactInfoRepository.save(contactInfo);
+        ContactInfoEntity savedContactInfo = contactInfoRepository.save(contactInfo); // insert
 
         ContactInfoResponse response = contactInfoMapper.toResponse(savedContactInfo);
         return BaseResponseModel.resultToResponse(response);
