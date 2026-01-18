@@ -1,27 +1,22 @@
 package com.phonebook_system.report_service.service;
 
-import com.phonebook_system.report_service.entity.ReportEntity;
-import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
-import com.phonebook_system.report_service.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReportEventListener {
-    private final ReportRepository reportRepository;
+    private final ReportService reportService;
 
 
-    @KafkaListener(topics = "report-requests")
+    @KafkaListener(topics = "report-requests", groupId = "report-group")
     public void handle(ReportRequestEvent event) {
-        ReportEntity report = ReportEntity.builder()
-                .id(event.getReportId())
-                .requestDate(event.getRequestDate())
-                .status(ReportStatus.PREPARING)
-                .build();
-
-        reportRepository.save(report);
+        log.info("Received report request for id: {}", event.getReportId());
+        reportService.generateReport(event);
     }
 }

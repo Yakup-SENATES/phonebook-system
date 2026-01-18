@@ -11,7 +11,7 @@ import com.phonebook_system.report_service.model.response.*;
 import com.phonebook_system.report_service.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,11 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final ReportMapper reportMapper;
     private final ContactServiceClient contactServiceClient;
+
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value("${spring.kafka.topic}")
+    private String topic;
 
     @Transactional
     public BaseResponseModel<ReportResponse> requestReport() {
@@ -39,12 +43,13 @@ public class ReportService {
 
         ReportEntity savedReport = reportRepository.save(report);
 
+        UUID reportId = savedReport.getId();
         ReportRequestEvent event = ReportRequestEvent.builder()
-                .reportId(savedReport.getId())
+                .reportId(reportId)
                 .requestDate(savedReport.getRequestDate())
                 .build();
 
-        kafkaTemplate.send("report-requests", event);
+        kafkaTemplate.send(topic, reportId.toString(), event);
 
         return BaseResponseModel.success(reportMapper.toResponse(savedReport));
     }
@@ -64,36 +69,46 @@ public class ReportService {
         return BaseResponseModel.success(reportMapper.toDetailResponse(report));
     }
 
-    @KafkaListener(topics = "report-requests", groupId = "report-group")
     public void generateReport(ReportRequestEvent event) {
         log.info("Received report request for id: {}", event.getReportId());
 
+        ReportEntity report = reportRepository.findById(event.getReportId())
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+
+        // Idempotency guard
+        if (report.getStatus() == ReportStatus.COMPLETED) {
+            return;
+        }
+
         try {
             // Get stats from Contact Service
-            BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient.getLocationStats();
+            BaseResponseModel<LocationStatisticListResponse> statsResponse =
+                    contactServiceClient.getLocationStats();
 
-            if (statsResponse.isSuccess() && statsResponse.getData() != null) {
-                ReportEntity report = reportRepository.findById(event.getReportId())
-                        .orElseThrow(() -> new RuntimeException("Report not found"));
-
-                List<ReportDetailEntity> details = statsResponse.getData().getLocationList().stream()
-                        .map(stat -> ReportDetailEntity.builder()
-                                .report(report)
-                                .location(stat.getLocation())
-                                .personCount(stat.getPersonCount())
-                                .phoneNumberCount(stat.getPhoneNumberCount())
-                                .build())
-                        .toList();
-
-                report.getDetails().addAll(details);
-                report.setStatus(ReportStatus.COMPLETED);
-                reportRepository.save(report);
-
-                log.info("Report generated successfully for id: {}", event.getReportId());
-            } else {
+            if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());
+                throw new IllegalStateException("Failed to get statistics");
             }
+
+            List<ReportDetailEntity> details =
+                    statsResponse.getData().getLocationList().stream()
+                    .map(stat -> ReportDetailEntity.builder()
+                            .report(report)
+                            .location(stat.getLocation())
+                            .personCount(stat.getPersonCount())
+                            .phoneNumberCount(stat.getPhoneNumberCount())
+                            .build())
+                    .toList();
+
+            report.getDetails().clear();
+            report.getDetails().addAll(details);
+            report.setStatus(ReportStatus.COMPLETED);
+            reportRepository.save(report);
+
+            log.info("Report generated successfully for id: {}", event.getReportId());
+
         } catch (Exception e) {
+            report.setStatus(ReportStatus.FAILED);
             log.error("Error generating report for id: {}", event.getReportId(), e);
         }
     }
