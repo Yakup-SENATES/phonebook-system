@@ -3,7 +3,7 @@ spring:
     name: report-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/reportdb
+    url: jdbc:postgresql://localhost:5433/reportdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
