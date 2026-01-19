@@ -28,7 +28,7 @@ import java.util.UUID;
 public class ReportService {
 
     private final ReportRepository reportRepository;
-    private final ReportMapper reportMapper;
+    private final ReportMapper reportMapper = ReportMapper.INSTANCE;
     private final ContactServiceClient contactServiceClient;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;

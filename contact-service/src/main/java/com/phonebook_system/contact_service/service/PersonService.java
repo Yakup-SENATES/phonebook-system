@@ -23,7 +23,7 @@ import java.util.UUID;
 public class PersonService {
     private final PersonRepository personRepository;
     private final ContactService contactService;
-    private final PersonMapper personMapper;
+    private final PersonMapper personMapper = PersonMapper.INSTANCE;
 
     @Transactional
     public BaseResponseModel<PersonResponse> createPerson(CreatePersonRequest request) {
