@@ -6,11 +6,13 @@ import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
 import com.phonebook_system.contact_service.model.response.PersonDetailResponse;
 import com.phonebook_system.contact_service.model.response.PersonResponse;
 import org.mapstruct.*;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = { ContactInfoMapper.class })
 public interface PersonMapper {
+    PersonMapper INSTANCE = Mappers.getMapper(PersonMapper.class);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contactInfoList", ignore = true)

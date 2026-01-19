@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContactService {
     private final ContactInfoRepository contactInfoRepository;
-    private final ContactInfoMapper contactInfoMapper;
+    private final ContactInfoMapper contactInfoMapper = ContactInfoMapper.INSTANCE;
 
     public ContactInfoResponse saveContactInfo(PersonEntity person, CreateContactInfoRequest request) {
         ContactInfoEntity contactInfo = contactInfoMapper.toEntity(request);
