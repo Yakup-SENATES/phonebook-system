@@ -32,62 +32,7 @@ Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telef
 
 ## 🏗️ Mimari Yapı
 
-```mermaid
-flowchart TB
-    %% Client Section
-    subgraph CLIENT [İstemci Katmanı]
-        API[API İstemcisi<br/>Web/Mobil Uygulama]
-    end
-    
-    %% API Gateway Section
-    subgraph GATEWAY [API Gateway]
-        GW[Spring Cloud Gateway<br/>:8082]
-    end
-    
-    %% Microservices Section
-    subgraph MICROSERVICES [Mikroservisler]
-        CS[Contact Service<br/>:8080<br/>📇 Kişi Yönetimi]
-        RS[Report Service<br/>:8081<br/>📊 Raporlama]
-    end
-    
-    %% Databases Section
-    subgraph DATABASES [Veritabanları]
-        CSDB[(PostgreSQL<br/>contactdb)]
-        RSDB[(PostgreSQL<br/>reportdb)]
-    end
-    
-    %% Messaging Section
-    subgraph MESSAGING [Mesajlaşma Altyapısı]
-        KAFKA[Apache Kafka<br/>Broker]
-        TOPIC[['report-requests'<br/>Topic]]
-    end
-    
-    %% Data Flow
-    API -->|HTTP/REST| GW
-    GW -->|/api/persons/**| CS
-    GW -->|/api/reports/**| RS
-    
-    CS -->|JPA/Hibernate| CSDB
-    RS -->|JPA/Hibernate| RSDB
-    
-    CS -->|Kafka Producer<br/>Rapor Talebi| TOPIC
-    TOPIC -->|Kafka Consumer| RS
-    
-    KAFKA -->|Broker| TOPIC
-    
-    %% Styling
-    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef gateway fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    classDef service fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef database fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    classDef messaging fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
-    
-    class CLIENT,API client
-    class GATEWAY,GW gateway
-    class MICROSERVICES,CS,RS service
-    class DATABASES,CSDB,RSDB database
-    class MESSAGING,KAFKA,TOPIC messaging
-```
+![Alt text](images/phonebook-reporting-uml.png)
 
 ---
 
@@ -397,62 +342,7 @@ This project is a comprehensive Phonebook and Reporting system developed using m
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart TB
-    %% Client Section
-    subgraph CLIENT [Client Layer]
-        API[API Client<br/>Web/Mobile App]
-    end
-    
-    %% API Gateway Section
-    subgraph GATEWAY [API Gateway]
-        GW[Spring Cloud Gateway<br/>:8082]
-    end
-    
-    %% Microservices Section
-    subgraph MICROSERVICES [Microservices]
-        CS[Contact Service<br/>:8080<br/>📇 Contact Management]
-        RS[Report Service<br/>:8081<br/>📊 Reporting]
-    end
-    
-    %% Databases Section
-    subgraph DATABASES [Databases]
-        CSDB[(PostgreSQL<br/>contactdb)]
-        RSDB[(PostgreSQL<br/>reportdb)]
-    end
-    
-    %% Messaging Section
-    subgraph MESSAGING [Messaging Infrastructure]
-        KAFKA[Apache Kafka<br/>Broker]
-        TOPIC[['report-requests'<br/>Topic]]
-    end
-    
-    %% Data Flow
-    API -->|HTTP/REST| GW
-    GW -->|/api/persons/**| CS
-    GW -->|/api/reports/**| RS
-    
-    CS -->|JPA/Hibernate| CSDB
-    RS -->|JPA/Hibernate| RSDB
-    
-    CS -->|Kafka Producer<br/>Report Request| TOPIC
-    TOPIC -->|Kafka Consumer| RS
-    
-    KAFKA -->|Broker| TOPIC
-    
-    %% Styling
-    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef gateway fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    classDef service fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef database fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    classDef messaging fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
-    
-    class CLIENT,API client
-    class GATEWAY,GW gateway
-    class MICROSERVICES,CS,RS service
-    class DATABASES,CSDB,RSDB database
-    class MESSAGING,KAFKA,TOPIC messaging
-```
+![Alt text](images/phonebook-reporting-uml.png)
 
 ---
 
