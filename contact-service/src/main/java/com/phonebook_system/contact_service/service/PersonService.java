@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -29,10 +31,15 @@ public class PersonService {
 
     @Transactional
     public BaseResponseModel<PersonResponse> createPerson(CreatePersonRequest request) {
-        PersonEntity personEntity = personMapper.toEntity(request);
-        PersonEntity savedPerson = personRepository.save(personEntity);
-        PersonResponse response = personMapper.toResponse(savedPerson);
-        return BaseResponseModel.resultToResponse(response);
+        try {
+            PersonEntity personEntity = personMapper.toEntity(request);
+            PersonEntity savedPerson = personRepository.save(personEntity);
+            PersonResponse response = personMapper.toResponse(savedPerson);
+            return BaseResponseModel.resultToResponse(response);
+        } catch (DataIntegrityViolationException e) {
+            throw new PersonsNotFoundException(); // Using existing exception or generic RuntimeException for now,
+                                                  // ideally should be distinct
+        }
     }
 
     @Transactional
@@ -67,7 +74,7 @@ public class PersonService {
 
     @Transactional(readOnly = true)
     public BaseResponseModel<PersonDetailResponse> getPersonDetails(UUID id) {
-        PersonEntity person = personRepository.findById(id)
+        PersonEntity person = personRepository.findWithContactsById(id)
                 .orElseThrow(() -> new PersonNotFoundException(id));
         PersonDetailResponse response = personMapper.toDetailResponse(person);
         return BaseResponseModel.resultToResponse(response);

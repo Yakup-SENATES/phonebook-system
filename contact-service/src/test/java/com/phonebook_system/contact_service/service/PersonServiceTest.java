@@ -44,8 +44,7 @@ class PersonServiceTest {
         request.setLastName("Doe");
         request.setCompany("Setur");
 
-        when(personRepository.save(any(PersonEntity.class))).thenAnswer(i ->
-        {
+        when(personRepository.save(any(PersonEntity.class))).thenAnswer(i -> {
             PersonEntity savedEntity = i.getArgument(0);
             savedEntity.setId(UUID.randomUUID());
             return savedEntity;
@@ -58,11 +57,9 @@ class PersonServiceTest {
         assertNotNull(result);
         assertNotNull(result.getData().getId());
         verify(personRepository).save(any(PersonEntity.class));
-        verify(personRepository).save(argThat(personEntity ->
-                personEntity.getFirstName().equals("John") &&
-                        personEntity.getLastName().equals("Doe") &&
-                        personEntity.getCompany().equals("Setur")
-        ));
+        verify(personRepository).save(argThat(personEntity -> personEntity.getFirstName().equals("John") &&
+                personEntity.getLastName().equals("Doe") &&
+                personEntity.getCompany().equals("Setur")));
     }
 
     @Test
@@ -183,7 +180,7 @@ class PersonServiceTest {
         entity.setId(UUID.randomUUID());
         entity.setFirstName("Ahmet");
 
-        when(personRepository.findById(personId)).thenReturn(Optional.of(entity));
+        when(personRepository.findWithContactsById(personId)).thenReturn(Optional.of(entity));
         // Act
         BaseResponseModel<PersonDetailResponse> result = personService.getPersonDetails(personId);
 
@@ -197,11 +194,11 @@ class PersonServiceTest {
     void getPersonDetails_NotFound() {
         // Arrange
         UUID personId = UUID.randomUUID();
-        when(personRepository.findById(personId)).thenReturn(Optional.empty());
+        when(personRepository.findWithContactsById(personId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(PersonNotFoundException.class, () -> personService.getPersonDetails(personId));
-        verify(personRepository).findById(personId);
+        verify(personRepository).findWithContactsById(personId);
     }
 
     @Test
@@ -294,7 +291,8 @@ class PersonServiceTest {
         when(contactService.getContactInfo(contactId)).thenReturn(contactInfo);
 
         // Act & Assert
-        InvalidContactInfoException exception = assertThrows(InvalidContactInfoException.class, () -> personService.removeContactInfo(otherPersonId, contactId));
+        InvalidContactInfoException exception = assertThrows(InvalidContactInfoException.class,
+                () -> personService.removeContactInfo(otherPersonId, contactId));
         assertEquals("Contact info does not belong to this person", exception.getMessage());
         verify(contactService, never()).deleteContactInfo(any());
     }
@@ -307,7 +305,7 @@ class PersonServiceTest {
                 .personCount(10L)
                 .phoneNumberCount(20L)
                 .build();
-        LocationStatsListResponse response = new  LocationStatsListResponse();
+        LocationStatsListResponse response = new LocationStatsListResponse();
         response.setLocationStats(List.of(stats));
         when(contactService.createLocationStat()).thenReturn(response);
 
