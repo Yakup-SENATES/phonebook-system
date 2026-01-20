@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContactService {
     private final ContactInfoRepository contactInfoRepository;
-    private final ContactInfoMapper contactInfoMapper = ContactInfoMapper.INSTANCE;
+    private final ContactInfoMapper contactInfoMapper; // = ContactInfoMapper.INSTANCE;
 
     /**
      * Saves contact info for a person.

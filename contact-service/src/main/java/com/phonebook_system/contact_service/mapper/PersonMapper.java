@@ -12,7 +12,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = { ContactInfoMapper.class })
 public interface PersonMapper {
-    PersonMapper INSTANCE = Mappers.getMapper(PersonMapper.class);
+    //PersonMapper INSTANCE = Mappers.getMapper(PersonMapper.class);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contactInfoList", ignore = true)

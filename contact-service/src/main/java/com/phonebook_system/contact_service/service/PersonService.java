@@ -27,7 +27,7 @@ import java.util.UUID;
 public class PersonService {
     private final PersonRepository personRepository;
     private final ContactService contactService;
-    private final PersonMapper personMapper = PersonMapper.INSTANCE;
+    private final PersonMapper personMapper;
 
     /**
      * Creates a new person record in the system.
