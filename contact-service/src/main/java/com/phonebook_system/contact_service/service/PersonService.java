@@ -6,6 +6,7 @@ import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.PersonMapper;
 import com.phonebook_system.contact_service.model.exception.InvalidContactInfoException;
 import com.phonebook_system.contact_service.model.exception.PersonNotFoundException;
+import com.phonebook_system.contact_service.model.exception.PersonsNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.request.CreatePersonRequest;
 import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
@@ -14,6 +15,7 @@ import com.phonebook_system.contact_service.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +57,9 @@ public class PersonService {
     @Transactional(readOnly = true)
     public BaseResponseModel<PersonListResponse> listPersons() {
         List<PersonEntity> persons = personRepository.findAll();
+        if (CollectionUtils.isEmpty(persons)) {
+            throw new PersonsNotFoundException();
+        }
         List<PersonResponse> response = personMapper.toResponseList(persons);
         PersonListResponse wrapper = PersonListResponse.builder().persons(response).build();
         return BaseResponseModel.resultToResponse(wrapper);

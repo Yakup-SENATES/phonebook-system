@@ -4,6 +4,7 @@ import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.ContactInfoMapper;
 import com.phonebook_system.contact_service.model.exception.ContactInfoNotFoundException;
+import com.phonebook_system.contact_service.model.exception.LocationStatsNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.response.ContactInfoResponse;
 import com.phonebook_system.contact_service.model.response.LocationStatsResponse;
@@ -12,6 +13,7 @@ import com.phonebook_system.contact_service.repository.ContactInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,6 +45,10 @@ public class ContactService {
     @Transactional(readOnly = true)
     public LocationStatsListResponse createLocationStat() {
         List<String> locations = contactInfoRepository.findAllUniqueLocations();
+        if (CollectionUtils.isEmpty(locations)) {
+            throw new LocationStatsNotFoundException();
+        }
+
         List<LocationStatsResponse> stats = locations.stream().map(loc -> LocationStatsResponse.builder()
                 .location(loc)
                 .personCount(contactInfoRepository.countPersonsByLocation(loc))
