@@ -29,6 +29,12 @@ public class PersonService {
     private final ContactService contactService;
     private final PersonMapper personMapper = PersonMapper.INSTANCE;
 
+    /**
+     * Creates a new person record in the system.
+     *
+     * @param request the request object containing person details
+     * @return the created person wrapped in a response model
+     */
     @Transactional
     public BaseResponseModel<PersonResponse> createPerson(CreatePersonRequest request) {
         try {
@@ -42,6 +48,13 @@ public class PersonService {
         }
     }
 
+    /**
+     * Deletes a person by their unique identifier.
+     *
+     * @param id the UUID of the person to delete
+     * @return a successful response model
+     * @throws PersonNotFoundException if the person is not found
+     */
     @Transactional
     public BaseResponseModel<Void> deletePerson(UUID id) {
         PersonEntity person = personRepository.findById(id)
@@ -50,6 +63,14 @@ public class PersonService {
         return BaseResponseModel.ok();
     }
 
+    /**
+     * Updates an existing person's details.
+     *
+     * @param id      the UUID of the person to update
+     * @param request the request object containing new details
+     * @return the updated person wrapped in a response model
+     * @throws PersonNotFoundException if the person is not found
+     */
     @Transactional
     public BaseResponseModel<PersonResponse> updatePerson(UUID id, UpdatePersonRequest request) {
         PersonEntity person = personRepository.findById(id)
@@ -60,6 +81,12 @@ public class PersonService {
         return BaseResponseModel.resultToResponse(response);
     }
 
+    /**
+     * Lists all persons currently in the system.
+     *
+     * @return a list of all persons wrapped in a response model
+     * @throws PersonsNotFoundException if no persons are found
+     */
     // todo büyük datalar için pageable yapılabilir.
     @Transactional(readOnly = true)
     public BaseResponseModel<PersonListResponse> listPersons() {
@@ -72,6 +99,13 @@ public class PersonService {
         return BaseResponseModel.resultToResponse(wrapper);
     }
 
+    /**
+     * Retrieves detailed information about a person, including their contacts.
+     *
+     * @param id the UUID of the person
+     * @return the person details wrapped in a response model
+     * @throws PersonNotFoundException if the person is not found
+     */
     @Transactional(readOnly = true)
     public BaseResponseModel<PersonDetailResponse> getPersonDetails(UUID id) {
         PersonEntity person = personRepository.findWithContactsById(id)
@@ -80,6 +114,14 @@ public class PersonService {
         return BaseResponseModel.resultToResponse(response);
     }
 
+    /**
+     * Adds contact information to a specific person.
+     *
+     * @param personId the UUID of the person
+     * @param request  the request object containing contact info details
+     * @return the added contact info wrapped in a response model
+     * @throws PersonNotFoundException if the person is not found
+     */
     @Transactional
     public BaseResponseModel<ContactInfoResponse> addContactInfo(UUID personId, CreateContactInfoRequest request) {
         PersonEntity person = personRepository.findById(personId) // select
@@ -89,6 +131,15 @@ public class PersonService {
         return BaseResponseModel.resultToResponse(response);
     }
 
+    /**
+     * Removes a specific contact information from a person.
+     *
+     * @param personId  the UUID of the person
+     * @param contactId the UUID of the contact info to remove
+     * @return a successful response model
+     * @throws InvalidContactInfoException if the contact info does not belong to
+     *                                     the person
+     */
     @Transactional
     public BaseResponseModel<Void> removeContactInfo(UUID personId, UUID contactId) {
         ContactInfoEntity contactInfo = contactService.getContactInfo(contactId);
@@ -101,6 +152,11 @@ public class PersonService {
         return BaseResponseModel.ok();
     }
 
+    /**
+     * Retrieves location statistics based on contact information.
+     *
+     * @return a list of location statistics wrapped in a response model
+     */
     public BaseResponseModel<LocationStatsListResponse> getLocationStats() {
         LocationStatsListResponse locationStat = contactService.createLocationStat();
         return BaseResponseModel.resultToResponse(locationStat);
