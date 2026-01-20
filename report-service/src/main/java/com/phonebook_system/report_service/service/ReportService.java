@@ -1,5 +1,6 @@
 package com.phonebook_system.report_service.service;
 
+import com.google.gson.Gson;
 import com.phonebook_system.report_service.base.BaseResponseModel;
 import com.phonebook_system.report_service.client.ContactServiceClient;
 import com.phonebook_system.report_service.entity.ReportDetailEntity;
@@ -30,7 +31,7 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final ReportMapper reportMapper = ReportMapper.INSTANCE;
     private final ContactServiceClient contactServiceClient;
-
+    private final Gson gson;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${spring.kafka.topic}")
@@ -70,10 +71,16 @@ public class ReportService {
         return reportMapper.toDetailResponse(report);
     }
 
+    /**
+     * Uses EntityGraph to fetch 'details' eagerly.
+     * Prevents LazyInitializationException when performing operations like .clear()
+     * on the collection outside an active persistence context.
+     */
     public void generateReport(ReportRequestEvent event) {
         log.info("Received report request for id: {}", event.getReportId());
 
-        ReportEntity report = reportRepository.findById(event.getReportId())
+        // lazy initialization make no session when .clear() use this findWithDetailsById
+        ReportEntity report = reportRepository.findWithDetailsById(event.getReportId())
                 .orElseThrow(() -> new ReportNotFoundException(event.getReportId()));
 
         // Idempotency guard
@@ -84,13 +91,13 @@ public class ReportService {
         try {
             // Get stats from Contact Service
             BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient.getLocationStats();
-
+            log.info("event feignResponse is :{} ", gson.toJson(statsResponse.getData()));
             if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());
                 throw new InvalidReportStateException("Failed to get statistics");
             }
 
-            List<ReportDetailEntity> details = statsResponse.getData().getLocationList().stream()
+            List<ReportDetailEntity> details = statsResponse.getData().getLocationStats().stream()
                     .map(stat -> ReportDetailEntity.builder()
                             .report(report)
                             .location(stat.getLocation())
