@@ -14,14 +14,14 @@ Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telef
 
 ## 📋 İçindekiler
 
-- [Teknolojiler ve Versiyonlar](#teknolojiler-ve-versiyonlar)
-- [Mimari Yapı](#mimari-yapı)
-- [Servisler](#servisler)
-- [API Endpoints](#api-endpoints)
-- [JSON Örnekleri](#json-örnekleri)
-- [Kafka Mesajlaşma Akışı](#kafka-mesajlaşma-akışı)
-- [Veritabanı Şeması](#veritabanı-şeması)
-- [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
+- [Teknolojiler ve Versiyonlar](#-teknolojiler-ve-versiyonlar)
+- [Mimari Yapı](#-mimari-yapı)
+- [Servisler](#-servisler)
+- [API Endpoints](#-api-endpoints)
+- [JSON Örnekleri](#-json-örnekleri)
+- [Kafka Mesajlaşma Akışı](#-kafka-mesajlaşma-akışı)
+- [Veritabanı Şeması](#-veritabanı-şeması)
+- [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma)
 
 ---
 
@@ -359,14 +359,14 @@ This project is a comprehensive Phonebook and Reporting system developed using m
 
 ## 📋 Table of Contents
 
-- [Technologies & Versions](#technologies--versions)
-- [Architecture](#architecture)
-- [Services](#services)
-- [API Endpoints](#api-endpoints)
-- [JSON Examples](#json-examples)
-- [Kafka Messaging Flow](#kafka-messaging-flow)
-- [Database Schema](#database-schema)
-- [Setup & Run](#setup--run)
+- [Technologies & Versions](#-technologies--versions)
+- [Architecture](#-architecture)
+- [Services](#-services)
+- [API Endpoints](#-api-endpoints)
+- [JSON Examples](#-json-examples)
+- [Kafka Messaging Flow](#-kafka-messaging-flow)
+- [Database Schema](#-database-schema)
+- [Setup & Run](#-setup--run)
 
 ---
 
