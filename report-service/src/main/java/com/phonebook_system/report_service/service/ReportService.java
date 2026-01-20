@@ -65,7 +65,7 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public ReportDetailResponse getReportDetail(UUID id) {
-        ReportEntity report = reportRepository.findById(id)
+        ReportEntity report = reportRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ReportNotFoundException(id));
         return reportMapper.toDetailResponse(report);
     }
@@ -83,16 +83,14 @@ public class ReportService {
 
         try {
             // Get stats from Contact Service
-            BaseResponseModel<LocationStatisticListResponse> statsResponse =
-                    contactServiceClient.getLocationStats();
+            BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient.getLocationStats();
 
             if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());
                 throw new InvalidReportStateException("Failed to get statistics");
             }
 
-            List<ReportDetailEntity> details =
-                    statsResponse.getData().getLocationList().stream()
+            List<ReportDetailEntity> details = statsResponse.getData().getLocationList().stream()
                     .map(stat -> ReportDetailEntity.builder()
                             .report(report)
                             .location(stat.getLocation())

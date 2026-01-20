@@ -121,7 +121,7 @@ class ReportServiceTest {
         UUID id = UUID.randomUUID();
         ReportEntity entity = ReportEntity.builder().id(id).status(ReportStatus.COMPLETED).build();
 
-        when(reportRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(reportRepository.findWithDetailsById(id)).thenReturn(Optional.of(entity));
 
         // Act
         ReportDetailResponse result = reportService.getReportDetail(id);
@@ -129,14 +129,14 @@ class ReportServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(ReportStatus.COMPLETED, result.getStatus());
-        verify(reportRepository).findById(id);
+        verify(reportRepository).findWithDetailsById(id);
     }
 
     @Test
     void getReportDetail_NotFound_ThrowsException() {
         // Arrange
         UUID id = UUID.randomUUID();
-        when(reportRepository.findById(id)).thenReturn(Optional.empty());
+        when(reportRepository.findWithDetailsById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ReportNotFoundException.class, () -> reportService.getReportDetail(id));
@@ -163,7 +163,8 @@ class ReportServiceTest {
         locationStatisticsResponse.setPersonCount(10L);
         locationStatisticsResponse.setPhoneNumberCount(20L);
         locationStatisticListResponse.setLocationList(List.of(locationStatisticsResponse));
-        BaseResponseModel<LocationStatisticListResponse> feignResponse = BaseResponseModel.resultToResponse(locationStatisticListResponse);
+        BaseResponseModel<LocationStatisticListResponse> feignResponse = BaseResponseModel
+                .resultToResponse(locationStatisticListResponse);
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(reportEntity));
         when(contactServiceClient.getLocationStats()).thenReturn(feignResponse);
