@@ -4,6 +4,7 @@ import com.phonebook_system.contact_service.base.BaseResponseModel;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.PersonMapper;
+import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.exception.InvalidContactInfoException;
 import com.phonebook_system.contact_service.model.exception.PersonNotFoundException;
 import com.phonebook_system.contact_service.model.exception.PersonsNotFoundException;
@@ -153,12 +154,12 @@ public class PersonService {
     }
 
     /**
-     * Retrieves location statistics based on contact information.
+     * Retrieves contact statistics based on contactType information.
      *
      * @return a list of location statistics wrapped in a response model
      */
-    public BaseResponseModel<LocationStatsListResponse> getLocationStats() {
-        LocationStatsListResponse locationStat = contactService.createLocationStat();
+    public BaseResponseModel<LocationStatsListResponse> getLocationStats(ContactTypeEnum type) {
+        LocationStatsListResponse locationStat = contactService.createLocationStat(type);
         return BaseResponseModel.resultToResponse(locationStat);
     }
 }

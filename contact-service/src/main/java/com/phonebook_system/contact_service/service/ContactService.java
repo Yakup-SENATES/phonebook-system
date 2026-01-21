@@ -3,6 +3,7 @@ package com.phonebook_system.contact_service.service;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.ContactInfoMapper;
+import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.exception.ContactInfoNotFoundException;
 import com.phonebook_system.contact_service.model.exception.LocationStatsNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
@@ -69,16 +70,21 @@ public class ContactService {
      * @throws LocationStatsNotFoundException if no location data is found
      */
     @Transactional(readOnly = true)
-    public LocationStatsListResponse createLocationStat() {
-        List<String> locations = contactInfoRepository.findAllUniqueLocations();
-        if (CollectionUtils.isEmpty(locations)) {
+    public LocationStatsListResponse createLocationStat(ContactTypeEnum type) {
+        List<ContactInfoEntity> contactInfos = contactInfoRepository.findAllByType(type);
+        if (CollectionUtils.isEmpty(contactInfos)) {
             throw new LocationStatsNotFoundException();
         }
 
-        List<LocationStatsResponse> stats = locations.stream().map(loc -> LocationStatsResponse.builder()
-                .location(loc)
-                .personCount(contactInfoRepository.countPersonsByLocation(loc))
-                .phoneNumberCount(contactInfoRepository.countPhoneNumbersByLocation(loc))
+        List<String> values = contactInfos.stream()
+                .map(ContactInfoEntity::getValue)
+                .distinct()
+                .toList();
+
+        List<LocationStatsResponse> stats = values.stream().map(val -> LocationStatsResponse.builder()
+                .location(val)
+                .personCount(contactInfoRepository.countPersonsByLocation(val))
+                .phoneNumberCount(contactInfoRepository.countPhoneNumbersByLocation(val))
                 .build()).collect(Collectors.toList());
         LocationStatsListResponse wrapper = new LocationStatsListResponse();
         wrapper.setLocationStats(stats);

@@ -1,6 +1,7 @@
 package com.phonebook_system.contact_service.controller;
 
 import com.phonebook_system.contact_service.base.BaseResponseModel;
+import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
 import com.phonebook_system.contact_service.model.request.CreatePersonRequest;
 import com.phonebook_system.contact_service.model.request.UpdatePersonRequest;
@@ -55,8 +56,9 @@ public class PersonController {
     }
 
     @GetMapping("/location-stats")
-    public ResponseEntity<BaseResponseModel<LocationStatsListResponse>> getLocationStats() {
-        BaseResponseModel<LocationStatsListResponse> response = personService.getLocationStats();
+    public ResponseEntity<BaseResponseModel<LocationStatsListResponse>> getLocationStats(
+            @RequestParam(defaultValue = "LOCATION") ContactTypeEnum type) {
+        BaseResponseModel<LocationStatsListResponse> response = personService.getLocationStats(type);
         return ResponseEntity.ok(response);
     }
 

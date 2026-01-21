@@ -307,16 +307,16 @@ class PersonServiceTest {
                 .build();
         LocationStatsListResponse response = new LocationStatsListResponse();
         response.setLocationStats(List.of(stats));
-        when(contactService.createLocationStat()).thenReturn(response);
+        when(contactService.createLocationStat(ContactTypeEnum.LOCATION)).thenReturn(response);
 
         // Act
-        BaseResponseModel<LocationStatsListResponse> result = personService.getLocationStats();
+        BaseResponseModel<LocationStatsListResponse> result = personService.getLocationStats(ContactTypeEnum.LOCATION);
 
         // Assert
         assertNotNull(result);
         assertEquals(response, result.getData());
         assertEquals(1, result.getData().getLocationStats().size());
         assertEquals("Istanbul", result.getData().getLocationStats().get(0).getLocation());
-        verify(contactService, times(1)).createLocationStat();
+        verify(contactService, times(1)).createLocationStat(ContactTypeEnum.LOCATION);
     }
 }
