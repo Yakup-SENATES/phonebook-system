@@ -1,5 +1,6 @@
 package com.phonebook_system.report_service.controller;
 
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.exception.ReportNotFoundException;
 import com.phonebook_system.report_service.model.response.ReportDetailResponse;
@@ -26,67 +27,68 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ReportController.class)
 class ReportControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
+        @Autowired
+        MockMvc mockMvc;
 
-    @MockitoBean
-    ReportService reportService;
+        @MockitoBean
+        ReportService reportService;
 
-    @Test
-    void requestReport_ShouldReturnOk() throws Exception {
-        // Arrange
-        ReportResponse response = ReportResponse.builder()
-                .id(UUID.randomUUID())
-                .status(ReportStatus.PREPARING)
-                .build();
+        @Test
+        void requestReport_ShouldReturnOk() throws Exception {
+                // Arrange
+                ReportResponse response = ReportResponse.builder()
+                                .id(UUID.randomUUID())
+                                .status(ReportStatus.PREPARING)
+                                .build();
 
-        when(reportService.requestReport()).thenReturn(response);
+                when(reportService.requestReport(ContactTypeEnum.LOCATION)).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/reports/request")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("PREPARING"));
-    }
+                // Act & Assert
+                mockMvc.perform(post("/api/reports/request")
+                                .param("type", "LOCATION")
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status").value("PREPARING"));
+        }
 
-    @Test
-    void listReports_ShouldReturnOk() throws Exception {
-        // Arrange
-        ReportListResponse response = ReportListResponse.builder()
-                .reportList(Collections.emptyList())
-                .build();
+        @Test
+        void listReports_ShouldReturnOk() throws Exception {
+                // Arrange
+                ReportListResponse response = ReportListResponse.builder()
+                                .reportList(Collections.emptyList())
+                                .build();
 
-        when(reportService.listReports()).thenReturn(response);
+                when(reportService.listReports()).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(get("/api/reports/list"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reportList").isArray());
-    }
+                // Act & Assert
+                mockMvc.perform(get("/api/reports/list"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.reportList").isArray());
+        }
 
-    @Test
-    void getReportDetail_ShouldReturnOk() throws Exception {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        ReportDetailResponse response = new ReportDetailResponse();
+        @Test
+        void getReportDetail_ShouldReturnOk() throws Exception {
+                // Arrange
+                UUID id = UUID.randomUUID();
+                ReportDetailResponse response = new ReportDetailResponse();
 
-        when(reportService.getReportDetail(id)).thenReturn(response);
+                when(reportService.getReportDetail(id)).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(get("/api/reports/{id}", id))
-                .andExpect(status().isOk());
-    }
+                // Act & Assert
+                mockMvc.perform(get("/api/reports/{id}", id))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getReportDetail_NotFound_ShouldReturn404() throws Exception {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        // Eğer bir GlobalExceptionHandler sınıfın varsa bu 404 döner
-        when(reportService.getReportDetail(id)).thenThrow(new ReportNotFoundException(id));
+        @Test
+        void getReportDetail_NotFound_ShouldReturn404() throws Exception {
+                // Arrange
+                UUID id = UUID.randomUUID();
+                // Eğer bir GlobalExceptionHandler sınıfın varsa bu 404 döner
+                when(reportService.getReportDetail(id)).thenThrow(new ReportNotFoundException(id));
 
-        // Act & Assert
-        mockMvc.perform(get("/api/reports/{id}", id))
-                .andExpect(status().isNotFound());
-    }
+                // Act & Assert
+                mockMvc.perform(get("/api/reports/{id}", id))
+                                .andExpect(status().isNotFound());
+        }
 
 }

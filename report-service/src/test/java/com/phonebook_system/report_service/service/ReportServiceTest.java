@@ -3,6 +3,7 @@ package com.phonebook_system.report_service.service;
 import com.phonebook_system.report_service.base.BaseResponseModel;
 import com.phonebook_system.report_service.client.ContactServiceClient;
 import com.phonebook_system.report_service.entity.ReportEntity;
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
 import com.phonebook_system.report_service.model.exception.ReportNotFoundException;
@@ -61,7 +62,7 @@ class ReportServiceTest {
         when(reportRepository.save(any(ReportEntity.class))).thenReturn(report);
 
         // Act
-        ReportResponse reportResponse = reportService.requestReport();
+        ReportResponse reportResponse = reportService.requestReport(ContactTypeEnum.LOCATION);
 
         // Assert
         assertNotNull(reportResponse);
@@ -79,7 +80,7 @@ class ReportServiceTest {
                 .thenThrow(new RuntimeException("Database Connection lost"));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportService.requestReport());
+        assertThrows(RuntimeException.class, () -> reportService.requestReport(ContactTypeEnum.LOCATION));
         verify(kafkaTemplate, never()).send(any(), any(), any());
     }
 
@@ -94,7 +95,8 @@ class ReportServiceTest {
                 .thenThrow(new RuntimeException("Kafka broker not available"));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportService.requestReport());
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> reportService.requestReport(ContactTypeEnum.LOCATION));
     }
 
     @Test
@@ -149,6 +151,7 @@ class ReportServiceTest {
         ReportRequestEvent reportRequestEvent = ReportRequestEvent.builder()
                 .reportId(reportId)
                 .requestDate(LocalDateTime.now())
+                .contactType(ContactTypeEnum.LOCATION)
                 .build();
 
         ReportEntity reportEntity = ReportEntity.builder()
@@ -167,7 +170,7 @@ class ReportServiceTest {
                 .resultToResponse(locationStatisticListResponse);
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(reportEntity));
-        when(contactServiceClient.getLocationStats()).thenReturn(feignResponse);
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION)).thenReturn(feignResponse);
 
         // Act
         reportService.generateReport(reportRequestEvent);
@@ -193,7 +196,8 @@ class ReportServiceTest {
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         // dış service de hata alırsa status fail olacaktı.
-        when(contactServiceClient.getLocationStats()).thenThrow(new RuntimeException("Service Down"));
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION))
+                .thenThrow(new RuntimeException("Service Down"));
 
         // Act
         reportService.generateReport(event);
@@ -221,7 +225,7 @@ class ReportServiceTest {
         reportService.generateReport(event);
 
         // Assert
-        verify(contactServiceClient, never()).getLocationStats();
+        verify(contactServiceClient, never()).getLocationStats(any());
         verify(reportRepository, never()).save(any());
     }
 
@@ -235,10 +239,10 @@ class ReportServiceTest {
         // Servis ayakta ama mantıksal hata dönüyor (isSuccess = false)
         BaseResponseModel<LocationStatisticListResponse> failResponse = BaseResponseModel.resultToResponse(null);
 
-        when(contactServiceClient.getLocationStats()).thenReturn(failResponse);
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION)).thenReturn(failResponse);
 
         // Act
-        reportService.generateReport(new ReportRequestEvent(reportId, LocalDateTime.now()));
+        reportService.generateReport(new ReportRequestEvent(reportId, LocalDateTime.now(), ContactTypeEnum.LOCATION));
 
         // Assert
         assertEquals(ReportStatus.FAILED, report.getStatus());

@@ -1,5 +1,6 @@
 package com.phonebook_system.report_service.model.event;
 
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +16,5 @@ import java.util.UUID;
 public class ReportRequestEvent {
     private UUID reportId;
     private LocalDateTime requestDate;
+    private ContactTypeEnum contactType;
 }

@@ -19,6 +19,7 @@ public class ReportRetryService {
     private final ReportRepository reportRepository;
     private final ReportService reportService;
 
+    //runs every 5 minutes to retry failed reports.
     @Scheduled(cron = "0 0/5 * * * *")
     public void retryFailedReports() {
         log.info("Starting retry mechanism for failed reports...");

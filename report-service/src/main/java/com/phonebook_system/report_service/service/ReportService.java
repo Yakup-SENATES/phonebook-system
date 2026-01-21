@@ -6,6 +6,7 @@ import com.phonebook_system.report_service.client.ContactServiceClient;
 import com.phonebook_system.report_service.entity.ReportDetailEntity;
 import com.phonebook_system.report_service.entity.ReportEntity;
 import com.phonebook_system.report_service.mapper.ReportMapper;
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
 import com.phonebook_system.report_service.model.exception.InvalidReportStateException;
@@ -38,7 +39,7 @@ public class ReportService {
     private String topic;
 
     @Transactional
-    public ReportResponse requestReport() {
+    public ReportResponse requestReport(ContactTypeEnum contactType) {
         ReportEntity report = ReportEntity.builder()
                 .requestDate(LocalDateTime.now())
                 .status(ReportStatus.PREPARING)
@@ -50,6 +51,7 @@ public class ReportService {
         ReportRequestEvent event = ReportRequestEvent.builder()
                 .reportId(reportId)
                 .requestDate(savedReport.getRequestDate())
+                .contactType(contactType)
                 .build();
 
         kafkaTemplate.send(topic, reportId.toString(), event);
@@ -90,7 +92,8 @@ public class ReportService {
 
         try {
             // Get stats from Contact Service
-            BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient.getLocationStats();
+            BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient
+                    .getLocationStats(event.getContactType());
             log.info("event feignResponse is :{} ", gson.toJson(statsResponse.getData()));
             if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());

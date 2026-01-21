@@ -1,5 +1,6 @@
 package com.phonebook_system.report_service.controller;
 
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.response.ReportDetailResponse;
 import com.phonebook_system.report_service.model.response.ReportListResponse;
 import com.phonebook_system.report_service.model.response.ReportResponse;
@@ -18,8 +19,9 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping("/request")
-    public ResponseEntity<ReportResponse> requestReport() {
-        return ResponseEntity.ok(reportService.requestReport());
+    public ResponseEntity<ReportResponse> requestReport(
+            @RequestParam(defaultValue = "LOCATION") ContactTypeEnum type) {
+        return ResponseEntity.ok(reportService.requestReport(type));
     }
 
     @GetMapping("/list")
