@@ -21,6 +21,9 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic: report-requests
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
       group-id: report-group
       auto-offset-reset: earliest

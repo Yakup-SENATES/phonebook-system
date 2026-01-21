@@ -3,6 +3,7 @@ package com.phonebook_system.contact_service.service;
 import com.phonebook_system.contact_service.base.BaseResponseModel;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
+import com.phonebook_system.contact_service.mapper.PersonMapper;
 import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.exception.InvalidContactInfoException;
 import com.phonebook_system.contact_service.model.exception.PersonNotFoundException;
@@ -33,6 +34,9 @@ class PersonServiceTest {
     @Mock
     private ContactService contactService;
 
+    @Mock
+    private PersonMapper personMapper;
+
     @InjectMocks
     private PersonService personService;
 
@@ -44,11 +48,18 @@ class PersonServiceTest {
         request.setLastName("Doe");
         request.setCompany("Setur");
 
-        when(personRepository.save(any(PersonEntity.class))).thenAnswer(i ->
-        {
+        when(personRepository.save(any(PersonEntity.class))).thenAnswer(i -> {
             PersonEntity savedEntity = i.getArgument(0);
             savedEntity.setId(UUID.randomUUID());
             return savedEntity;
+        });
+
+        when(personMapper.toEntity(any(CreatePersonRequest.class))).thenReturn(new PersonEntity());
+        when(personMapper.toResponse(any(PersonEntity.class))).thenAnswer(i -> {
+            PersonEntity entity = i.getArgument(0);
+            PersonResponse response = new PersonResponse();
+            response.setId(entity.getId());
+            return response;
         });
 
         // Act
@@ -58,11 +69,6 @@ class PersonServiceTest {
         assertNotNull(result);
         assertNotNull(result.getData().getId());
         verify(personRepository).save(any(PersonEntity.class));
-        verify(personRepository).save(argThat(personEntity ->
-                personEntity.getFirstName().equals("John") &&
-                        personEntity.getLastName().equals("Doe") &&
-                        personEntity.getCompany().equals("Setur")
-        ));
     }
 
     @Test
@@ -115,6 +121,22 @@ class PersonServiceTest {
         // Save metodu, guncellenmis nesneyi geri dondurmeli
         when(personRepository.save(any(PersonEntity.class))).thenAnswer(i -> i.getArgument(0));
 
+        doAnswer(invocation -> {
+            PersonEntity entity = invocation.getArgument(1);
+            UpdatePersonRequest req = invocation.getArgument(0);
+            entity.setFirstName(req.getFirstName());
+            entity.setLastName(req.getLastName());
+            entity.setCompany(req.getCompany());
+            return null;
+        }).when(personMapper).updateEntityFromRequest(any(UpdatePersonRequest.class), any(PersonEntity.class));
+
+        when(personMapper.toResponse(any(PersonEntity.class))).thenAnswer(i -> {
+            PersonEntity entity = i.getArgument(0);
+            PersonResponse response = new PersonResponse();
+            response.setId(entity.getId());
+            return response;
+        });
+
         // Act
         BaseResponseModel<PersonResponse> result = personService.updatePerson(personId, updateRequest);
 
@@ -154,6 +176,15 @@ class PersonServiceTest {
         List<PersonEntity> entities = Arrays.asList(p1, p2);
         when(personRepository.findAll()).thenReturn(entities);
 
+        when(personMapper.toResponseList(anyList())).thenAnswer(i -> {
+            List<PersonEntity> list = i.getArgument(0);
+            PersonResponse r1 = new PersonResponse();
+            r1.setFirstName(list.get(0).getFirstName());
+            PersonResponse r2 = new PersonResponse();
+            r2.setFirstName(list.get(1).getFirstName());
+            return Arrays.asList(r1, r2);
+        });
+
         // Act
         BaseResponseModel<PersonListResponse> result = personService.listPersons();
 
@@ -183,7 +214,15 @@ class PersonServiceTest {
         entity.setId(UUID.randomUUID());
         entity.setFirstName("Ahmet");
 
-        when(personRepository.findById(personId)).thenReturn(Optional.of(entity));
+        when(personRepository.findWithContactsById(personId)).thenReturn(Optional.of(entity));
+
+        when(personMapper.toDetailResponse(any(PersonEntity.class))).thenAnswer(i -> {
+            PersonEntity e = i.getArgument(0);
+            PersonDetailResponse response = new PersonDetailResponse();
+            response.setFirstName(e.getFirstName());
+            return response;
+        });
+
         // Act
         BaseResponseModel<PersonDetailResponse> result = personService.getPersonDetails(personId);
 
@@ -197,11 +236,11 @@ class PersonServiceTest {
     void getPersonDetails_NotFound() {
         // Arrange
         UUID personId = UUID.randomUUID();
-        when(personRepository.findById(personId)).thenReturn(Optional.empty());
+        when(personRepository.findWithContactsById(personId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(PersonNotFoundException.class, () -> personService.getPersonDetails(personId));
-        verify(personRepository).findById(personId);
+        verify(personRepository).findWithContactsById(personId);
     }
 
     @Test
@@ -294,7 +333,8 @@ class PersonServiceTest {
         when(contactService.getContactInfo(contactId)).thenReturn(contactInfo);
 
         // Act & Assert
-        InvalidContactInfoException exception = assertThrows(InvalidContactInfoException.class, () -> personService.removeContactInfo(otherPersonId, contactId));
+        InvalidContactInfoException exception = assertThrows(InvalidContactInfoException.class,
+                () -> personService.removeContactInfo(otherPersonId, contactId));
         assertEquals("Contact info does not belong to this person", exception.getMessage());
         verify(contactService, never()).deleteContactInfo(any());
     }
@@ -307,18 +347,18 @@ class PersonServiceTest {
                 .personCount(10L)
                 .phoneNumberCount(20L)
                 .build();
-        LocationStatsListResponse response = new  LocationStatsListResponse();
+        LocationStatsListResponse response = new LocationStatsListResponse();
         response.setLocationStats(List.of(stats));
-        when(contactService.createLocationStat()).thenReturn(response);
+        when(contactService.createLocationStat(ContactTypeEnum.LOCATION)).thenReturn(response);
 
         // Act
-        BaseResponseModel<LocationStatsListResponse> result = personService.getLocationStats();
+        BaseResponseModel<LocationStatsListResponse> result = personService.getLocationStats(ContactTypeEnum.LOCATION);
 
         // Assert
         assertNotNull(result);
         assertEquals(response, result.getData());
         assertEquals(1, result.getData().getLocationStats().size());
         assertEquals("Istanbul", result.getData().getLocationStats().get(0).getLocation());
-        verify(contactService, times(1)).createLocationStat();
+        verify(contactService, times(1)).createLocationStat(ContactTypeEnum.LOCATION);
     }
 }

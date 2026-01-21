@@ -14,14 +14,14 @@ Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telef
 
 ## 📋 İçindekiler
 
-- [Teknolojiler ve Versiyonlar](#teknolojiler-ve-versiyonlar)
-- [Mimari Yapı](#mimari-yapı)
-- [Servisler](#servisler)
-- [API Endpoints](#api-endpoints)
-- [JSON Örnekleri](#json-örnekleri)
-- [Kafka Mesajlaşma Akışı](#kafka-mesajlaşma-akışı)
-- [Veritabanı Şeması](#veritabanı-şeması)
-- [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
+- [Teknolojiler ve Versiyonlar](#-teknolojiler-ve-versiyonlar)
+- [Mimari Yapı](#-mimari-yapı)
+- [Servisler](#-servisler)
+- [API Endpoints](#-api-endpoints)
+- [JSON Örnekleri](#-json-örnekleri)
+- [Kafka Mesajlaşma Akışı](#-kafka-mesajlaşma-akışı)
+- [Veritabanı Şeması](#-veritabanı-şeması)
+- [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma)
 
 ---
 
@@ -47,7 +47,7 @@ Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telef
 
 ## 🏢 Servisler
 
-### 📇 Contact Service (Port: 8080)
+### 📇 Contact Service (Port: 8081)
 
 **Amaç:** Kişi ve iletişim bilgilerini yönetmek  
 **Veritabanı:** `contactdb` (PostgreSQL)  
@@ -58,7 +58,7 @@ Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telef
 - Konum bazlı istatistik toplama
 - Rapor talepleri için veri sağlama
 
-### 📊 Report Service (Port: 8081)
+### 📊 Report Service (Port: 8082)
 
 **Amaç:** Rapor taleplerini işlemek ve sonuçları saklamak  
 **Veritabanı:** `reportdb` (PostgreSQL)  
@@ -359,14 +359,14 @@ This project is a comprehensive Phonebook and Reporting system developed using m
 
 ## 📋 Table of Contents
 
-- [Technologies & Versions](#technologies--versions)
-- [Architecture](#architecture)
-- [Services](#services)
-- [API Endpoints](#api-endpoints)
-- [JSON Examples](#json-examples)
-- [Kafka Messaging Flow](#kafka-messaging-flow)
-- [Database Schema](#database-schema)
-- [Setup & Run](#setup--run)
+- [Technologies & Versions](#-technologies--versions)
+- [Architecture](#-architecture)
+- [Services](#-services)
+- [API Endpoints](#-api-endpoints)
+- [JSON Examples](#-json-examples)
+- [Kafka Messaging Flow](#-kafka-messaging-flow)
+- [Database Schema](#-database-schema)
+- [Setup & Run](#-setup--run)
 
 ---
 
@@ -392,7 +392,7 @@ This project is a comprehensive Phonebook and Reporting system developed using m
 
 ## 🏢 Services
 
-### 📇 Contact Service (Port: 8080)
+### 📇 Contact Service (Port: 8081)
 
 **Purpose:** Manage person and contact information  
 **Database:** `contactdb` (PostgreSQL)  
@@ -403,7 +403,7 @@ This project is a comprehensive Phonebook and Reporting system developed using m
 - Collect location-based statistics
 - Provide data for report requests
 
-### 📊 Report Service (Port: 8081)
+### 📊 Report Service (Port: 8082)
 
 **Purpose:** Process report requests and store results  
 **Database:** `reportdb` (PostgreSQL)  

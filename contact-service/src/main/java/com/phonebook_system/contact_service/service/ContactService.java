@@ -3,6 +3,7 @@ package com.phonebook_system.contact_service.service;
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
 import com.phonebook_system.contact_service.mapper.ContactInfoMapper;
+import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.exception.ContactInfoNotFoundException;
 import com.phonebook_system.contact_service.model.exception.LocationStatsNotFoundException;
 import com.phonebook_system.contact_service.model.request.CreateContactInfoRequest;
@@ -23,8 +24,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContactService {
     private final ContactInfoRepository contactInfoRepository;
-    private final ContactInfoMapper contactInfoMapper = ContactInfoMapper.INSTANCE;
+    private final ContactInfoMapper contactInfoMapper; // = ContactInfoMapper.INSTANCE;
 
+    /**
+     * Saves contact info for a person.
+     *
+     * @param person  the person entity owner of this contact info
+     * @param request the request object containing contact details
+     * @return the saved contact info response
+     */
     public ContactInfoResponse saveContactInfo(PersonEntity person, CreateContactInfoRequest request) {
         ContactInfoEntity contactInfo = contactInfoMapper.toEntity(request);
         contactInfo.setPerson(person);
@@ -33,26 +41,50 @@ public class ContactService {
         return contactInfoMapper.toResponse(savedContactInfo);
     }
 
+    /**
+     * Retrieves a contact info entity by ID.
+     *
+     * @param contactId the UUID of the contact info
+     * @return the contact info entity
+     * @throws ContactInfoNotFoundException if contact info is not found
+     */
     public ContactInfoEntity getContactInfo(UUID contactId) {
         return contactInfoRepository.findById(contactId)
                 .orElseThrow(() -> new ContactInfoNotFoundException(contactId));
     }
 
+    /**
+     * Deletes a contact info entity.
+     *
+     * @param contact the contact info entity to delete
+     */
     public void deleteContactInfo(ContactInfoEntity contact) {
         contactInfoRepository.delete(contact);
     }
 
+    /**
+     * Creates and retrieves location statistics.
+     * Generates a report of person and phone number counts per location.
+     *
+     * @return a list of location statistics wrapped in a response object
+     * @throws LocationStatsNotFoundException if no location data is found
+     */
     @Transactional(readOnly = true)
-    public LocationStatsListResponse createLocationStat() {
-        List<String> locations = contactInfoRepository.findAllUniqueLocations();
-        if (CollectionUtils.isEmpty(locations)) {
+    public LocationStatsListResponse createLocationStat(ContactTypeEnum type) {
+        List<ContactInfoEntity> contactInfos = contactInfoRepository.findAllByType(type);
+        if (CollectionUtils.isEmpty(contactInfos)) {
             throw new LocationStatsNotFoundException();
         }
 
-        List<LocationStatsResponse> stats = locations.stream().map(loc -> LocationStatsResponse.builder()
-                .location(loc)
-                .personCount(contactInfoRepository.countPersonsByLocation(loc))
-                .phoneNumberCount(contactInfoRepository.countPhoneNumbersByLocation(loc))
+        List<String> values = contactInfos.stream()
+                .map(ContactInfoEntity::getValue)
+                .distinct()
+                .toList();
+
+        List<LocationStatsResponse> stats = values.stream().map(val -> LocationStatsResponse.builder()
+                .location(val)
+                .personCount(contactInfoRepository.countPersonsByLocation(val))
+                .phoneNumberCount(contactInfoRepository.countPhoneNumbersByLocation(val))
                 .build()).collect(Collectors.toList());
         LocationStatsListResponse wrapper = new LocationStatsListResponse();
         wrapper.setLocationStats(stats);

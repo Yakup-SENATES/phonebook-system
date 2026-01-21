@@ -2,6 +2,7 @@ package com.phonebook_system.contact_service.service;
 
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
 import com.phonebook_system.contact_service.entity.PersonEntity;
+import com.phonebook_system.contact_service.mapper.ContactInfoMapper;
 import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import com.phonebook_system.contact_service.model.exception.ContactInfoNotFoundException;
 import com.phonebook_system.contact_service.model.exception.LocationStatsNotFoundException;
@@ -32,6 +33,9 @@ class ContactServiceTest {
     @Mock
     private ContactInfoRepository contactInfoRepository;
 
+    @Mock
+    private ContactInfoMapper contactInfoMapper;
+
     @InjectMocks
     private ContactService contactService;
 
@@ -47,11 +51,23 @@ class ContactServiceTest {
                 .value("Istanbul")
                 .build();
 
+        when(contactInfoMapper.toEntity(request)).thenReturn(new ContactInfoEntity());
+        when(contactInfoMapper.toResponse(any(ContactInfoEntity.class))).thenAnswer(invocation -> {
+            ContactInfoEntity entity = invocation.getArgument(0);
+            ContactInfoResponse response = new ContactInfoResponse();
+            response.setId(entity.getId());
+            response.setType(entity.getType());
+            response.setValue(entity.getValue());
+            return response;
+        });
+
         when(contactInfoRepository.save(any(ContactInfoEntity.class)))
                 .thenAnswer(invocation -> {
                     ContactInfoEntity savedEntity = invocation.getArgument(0);
                     savedEntity.setPerson(person);
                     savedEntity.setId(id);
+                    savedEntity.setType(request.getType());
+                    savedEntity.setValue(request.getValue());
                     return savedEntity;
                 });
 
@@ -128,7 +144,11 @@ class ContactServiceTest {
         String location2 = "Ankara";
         List<String> locations = Arrays.asList(location1, location2);
 
-        when(contactInfoRepository.findAllUniqueLocations()).thenReturn(locations);
+        ContactInfoEntity info1 = ContactInfoEntity.builder().value(location1).type(ContactTypeEnum.LOCATION).build();
+        ContactInfoEntity info2 = ContactInfoEntity.builder().value(location2).type(ContactTypeEnum.LOCATION).build();
+        List<ContactInfoEntity> contactInfos = Arrays.asList(info1, info2);
+
+        when(contactInfoRepository.findAllByType(ContactTypeEnum.LOCATION)).thenReturn(contactInfos);
         // istanbul verileri
         when(contactInfoRepository.countPersonsByLocation(location1)).thenReturn(10L);
         when(contactInfoRepository.countPhoneNumbersByLocation(location1)).thenReturn(20L);
@@ -137,7 +157,7 @@ class ContactServiceTest {
         when(contactInfoRepository.countPhoneNumbersByLocation(location2)).thenReturn(10L);
 
         // Act
-        LocationStatsListResponse result = contactService.createLocationStat();
+        LocationStatsListResponse result = contactService.createLocationStat(ContactTypeEnum.LOCATION);
 
         // Assert
         assertNotNull(result);
@@ -155,7 +175,7 @@ class ContactServiceTest {
         assertEquals(10L, ankaraStat.getPhoneNumberCount());
 
         // behavior
-        verify(contactInfoRepository, times(1)).findAllUniqueLocations();
+        verify(contactInfoRepository, times(1)).findAllByType(ContactTypeEnum.LOCATION);
         verify(contactInfoRepository, times(1)).countPersonsByLocation(location1);
         verify(contactInfoRepository, times(1)).countPhoneNumbersByLocation(location1);
         verify(contactInfoRepository, times(1)).countPersonsByLocation(location2);
@@ -165,10 +185,11 @@ class ContactServiceTest {
     @Test
     void createLocationStat_ThrowsException_WhenLocationsEmpty() {
         // Arrange
-        when(contactInfoRepository.findAllUniqueLocations()).thenReturn(Collections.emptyList());
+        when(contactInfoRepository.findAllByType(ContactTypeEnum.LOCATION)).thenReturn(Collections.emptyList());
 
         // Act & Assert
-        assertThrows(LocationStatsNotFoundException.class, () -> contactService.createLocationStat());
+        assertThrows(LocationStatsNotFoundException.class,
+                () -> contactService.createLocationStat(ContactTypeEnum.LOCATION));
 
         // Alt metodlarin hic cagrilmadigini dogrula
         verify(contactInfoRepository, never()).countPersonsByLocation(anyString());

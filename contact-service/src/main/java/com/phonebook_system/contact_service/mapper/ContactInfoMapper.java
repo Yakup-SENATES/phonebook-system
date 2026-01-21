@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ContactInfoMapper {
-    ContactInfoMapper INSTANCE = Mappers.getMapper(ContactInfoMapper.class);
+    //ContactInfoMapper INSTANCE = Mappers.getMapper(ContactInfoMapper.class);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "person", ignore = true)

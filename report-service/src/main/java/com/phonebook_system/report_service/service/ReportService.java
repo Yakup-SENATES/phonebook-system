@@ -1,10 +1,12 @@
 package com.phonebook_system.report_service.service;
 
+import com.google.gson.Gson;
 import com.phonebook_system.report_service.base.BaseResponseModel;
 import com.phonebook_system.report_service.client.ContactServiceClient;
 import com.phonebook_system.report_service.entity.ReportDetailEntity;
 import com.phonebook_system.report_service.entity.ReportEntity;
 import com.phonebook_system.report_service.mapper.ReportMapper;
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
 import com.phonebook_system.report_service.model.exception.InvalidReportStateException;
@@ -28,16 +30,16 @@ import java.util.UUID;
 public class ReportService {
 
     private final ReportRepository reportRepository;
-    private final ReportMapper reportMapper = ReportMapper.INSTANCE;
+    private final ReportMapper reportMapper;
     private final ContactServiceClient contactServiceClient;
-
+    private final Gson gson;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${spring.kafka.topic}")
     private String topic;
 
     @Transactional
-    public ReportResponse requestReport() {
+    public ReportResponse requestReport(ContactTypeEnum contactType) {
         ReportEntity report = ReportEntity.builder()
                 .requestDate(LocalDateTime.now())
                 .status(ReportStatus.PREPARING)
@@ -49,6 +51,7 @@ public class ReportService {
         ReportRequestEvent event = ReportRequestEvent.builder()
                 .reportId(reportId)
                 .requestDate(savedReport.getRequestDate())
+                .contactType(contactType)
                 .build();
 
         kafkaTemplate.send(topic, reportId.toString(), event);
@@ -65,15 +68,21 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public ReportDetailResponse getReportDetail(UUID id) {
-        ReportEntity report = reportRepository.findById(id)
+        ReportEntity report = reportRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ReportNotFoundException(id));
         return reportMapper.toDetailResponse(report);
     }
 
+    /**
+     * Uses EntityGraph to fetch 'details' eagerly.
+     * Prevents LazyInitializationException when performing operations like .clear()
+     * on the collection outside an active persistence context.
+     */
     public void generateReport(ReportRequestEvent event) {
         log.info("Received report request for id: {}", event.getReportId());
 
-        ReportEntity report = reportRepository.findById(event.getReportId())
+        // lazy initialization make no session when .clear() use this findWithDetailsById
+        ReportEntity report = reportRepository.findWithDetailsById(event.getReportId())
                 .orElseThrow(() -> new ReportNotFoundException(event.getReportId()));
 
         // Idempotency guard
@@ -83,16 +92,15 @@ public class ReportService {
 
         try {
             // Get stats from Contact Service
-            BaseResponseModel<LocationStatisticListResponse> statsResponse =
-                    contactServiceClient.getLocationStats();
-
+            BaseResponseModel<LocationStatisticListResponse> statsResponse = contactServiceClient
+                    .getLocationStats(event.getContactType());
+            log.info("event feignResponse is :{} ", gson.toJson(statsResponse.getData()));
             if (!statsResponse.isSuccess() || statsResponse.getData() == null) {
                 log.error("Failed to get stats from Contact Service for report: {}", event.getReportId());
                 throw new InvalidReportStateException("Failed to get statistics");
             }
 
-            List<ReportDetailEntity> details =
-                    statsResponse.getData().getLocationList().stream()
+            List<ReportDetailEntity> details = statsResponse.getData().getLocationStats().stream()
                     .map(stat -> ReportDetailEntity.builder()
                             .report(report)
                             .location(stat.getLocation())

@@ -8,5 +8,5 @@ import java.util.List;
 @Getter
 @Setter
 public class LocationStatisticListResponse {
-    private List<LocationStatisticsResponse> locationList;
+    private List<LocationStatisticsResponse> locationStats;
 }

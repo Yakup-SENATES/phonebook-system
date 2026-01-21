@@ -1,8 +1,11 @@
 package com.phonebook_system.report_service.service;
 
+import com.google.gson.Gson;
 import com.phonebook_system.report_service.base.BaseResponseModel;
 import com.phonebook_system.report_service.client.ContactServiceClient;
 import com.phonebook_system.report_service.entity.ReportEntity;
+import com.phonebook_system.report_service.mapper.ReportMapper;
+import com.phonebook_system.report_service.model.ContactTypeEnum;
 import com.phonebook_system.report_service.model.ReportStatus;
 import com.phonebook_system.report_service.model.event.ReportRequestEvent;
 import com.phonebook_system.report_service.model.exception.ReportNotFoundException;
@@ -37,7 +40,13 @@ class ReportServiceTest {
     ContactServiceClient contactServiceClient;
 
     @Mock
+    ReportMapper reportMapper;
+
+    @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Mock
+    private Gson gson;
 
     private final String topic = "report-request";
 
@@ -59,9 +68,11 @@ class ReportServiceTest {
                 .status(ReportStatus.PREPARING)
                 .build();
         when(reportRepository.save(any(ReportEntity.class))).thenReturn(report);
+        when(reportMapper.toResponse(any(ReportEntity.class)))
+                .thenReturn(ReportResponse.builder().id(reportId).build());
 
         // Act
-        ReportResponse reportResponse = reportService.requestReport();
+        ReportResponse reportResponse = reportService.requestReport(ContactTypeEnum.LOCATION);
 
         // Assert
         assertNotNull(reportResponse);
@@ -79,7 +90,7 @@ class ReportServiceTest {
                 .thenThrow(new RuntimeException("Database Connection lost"));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportService.requestReport());
+        assertThrows(RuntimeException.class, () -> reportService.requestReport(ContactTypeEnum.LOCATION));
         verify(kafkaTemplate, never()).send(any(), any(), any());
     }
 
@@ -94,18 +105,24 @@ class ReportServiceTest {
                 .thenThrow(new RuntimeException("Kafka broker not available"));
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportService.requestReport());
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> reportService.requestReport(ContactTypeEnum.LOCATION));
     }
 
     @Test
     void listReports_Success() {
         // Arrange
-        ReportEntity r1 = ReportEntity.builder().id(UUID.randomUUID()).status(ReportStatus.COMPLETED).build();
-        ReportEntity r2 = ReportEntity.builder().id(UUID.randomUUID()).status(ReportStatus.PREPARING).build();
+        UUID reportId1 = UUID.randomUUID();
+        UUID reportId2 = UUID.randomUUID();
+        ReportEntity r1 = ReportEntity.builder().id(reportId1).status(ReportStatus.COMPLETED).build();
+        ReportEntity r2 = ReportEntity.builder().id(reportId2).status(ReportStatus.PREPARING).build();
         List<ReportEntity> entities = List.of(r1, r2);
 
-        when(reportRepository.findAll()).thenReturn(entities);
+        ReportResponse rs1 = ReportResponse.builder().id(reportId1).status(ReportStatus.COMPLETED).build();
+        ReportResponse rs2 = ReportResponse.builder().id(reportId2).status(ReportStatus.PREPARING).build();
 
+        when(reportRepository.findAll()).thenReturn(entities);
+        when(reportMapper.toResponseList(any())).thenReturn(List.of(rs1, rs2));
         // Act
         ReportListResponse result = reportService.listReports();
 
@@ -121,7 +138,10 @@ class ReportServiceTest {
         UUID id = UUID.randomUUID();
         ReportEntity entity = ReportEntity.builder().id(id).status(ReportStatus.COMPLETED).build();
 
-        when(reportRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(reportRepository.findWithDetailsById(id)).thenReturn(Optional.of(entity));
+        ReportDetailResponse detailResponse = new ReportDetailResponse();
+        detailResponse.setStatus(ReportStatus.COMPLETED);
+        when(reportMapper.toDetailResponse(any(ReportEntity.class))).thenReturn(detailResponse);
 
         // Act
         ReportDetailResponse result = reportService.getReportDetail(id);
@@ -129,14 +149,14 @@ class ReportServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(ReportStatus.COMPLETED, result.getStatus());
-        verify(reportRepository).findById(id);
+        verify(reportRepository).findWithDetailsById(id);
     }
 
     @Test
     void getReportDetail_NotFound_ThrowsException() {
         // Arrange
         UUID id = UUID.randomUUID();
-        when(reportRepository.findById(id)).thenReturn(Optional.empty());
+        when(reportRepository.findWithDetailsById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ReportNotFoundException.class, () -> reportService.getReportDetail(id));
@@ -149,6 +169,7 @@ class ReportServiceTest {
         ReportRequestEvent reportRequestEvent = ReportRequestEvent.builder()
                 .reportId(reportId)
                 .requestDate(LocalDateTime.now())
+                .contactType(ContactTypeEnum.LOCATION)
                 .build();
 
         ReportEntity reportEntity = ReportEntity.builder()
@@ -162,11 +183,12 @@ class ReportServiceTest {
         locationStatisticsResponse.setLocation("Adana");
         locationStatisticsResponse.setPersonCount(10L);
         locationStatisticsResponse.setPhoneNumberCount(20L);
-        locationStatisticListResponse.setLocationList(List.of(locationStatisticsResponse));
-        BaseResponseModel<LocationStatisticListResponse> feignResponse = BaseResponseModel.resultToResponse(locationStatisticListResponse);
+        locationStatisticListResponse.setLocationStats(List.of(locationStatisticsResponse));
+        BaseResponseModel<LocationStatisticListResponse> feignResponse = BaseResponseModel
+                .resultToResponse(locationStatisticListResponse);
 
-        when(reportRepository.findById(reportId)).thenReturn(Optional.of(reportEntity));
-        when(contactServiceClient.getLocationStats()).thenReturn(feignResponse);
+        when(reportRepository.findWithDetailsById(reportId)).thenReturn(Optional.of(reportEntity));
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION)).thenReturn(feignResponse);
 
         // Act
         reportService.generateReport(reportRequestEvent);
@@ -190,9 +212,10 @@ class ReportServiceTest {
                 .id(reportId)
                 .status(ReportStatus.PREPARING).build();
 
-        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
+        when(reportRepository.findWithDetailsById(reportId)).thenReturn(Optional.of(report));
         // dış service de hata alırsa status fail olacaktı.
-        when(contactServiceClient.getLocationStats()).thenThrow(new RuntimeException("Service Down"));
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION))
+                .thenThrow(new RuntimeException("Service Down"));
 
         // Act
         reportService.generateReport(event);
@@ -214,13 +237,13 @@ class ReportServiceTest {
                 .id(reportId)
                 .status(ReportStatus.COMPLETED).build();
 
-        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
+        when(reportRepository.findWithDetailsById(reportId)).thenReturn(Optional.of(report));
 
         // Act
         reportService.generateReport(event);
 
         // Assert
-        verify(contactServiceClient, never()).getLocationStats();
+        verify(contactServiceClient, never()).getLocationStats(any());
         verify(reportRepository, never()).save(any());
     }
 
@@ -229,15 +252,15 @@ class ReportServiceTest {
         // Arrange
         UUID reportId = UUID.randomUUID();
         ReportEntity report = new ReportEntity();
-        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
+        when(reportRepository.findWithDetailsById(reportId)).thenReturn(Optional.of(report));
 
         // Servis ayakta ama mantıksal hata dönüyor (isSuccess = false)
         BaseResponseModel<LocationStatisticListResponse> failResponse = BaseResponseModel.resultToResponse(null);
 
-        when(contactServiceClient.getLocationStats()).thenReturn(failResponse);
+        when(contactServiceClient.getLocationStats(ContactTypeEnum.LOCATION)).thenReturn(failResponse);
 
         // Act
-        reportService.generateReport(new ReportRequestEvent(reportId, LocalDateTime.now()));
+        reportService.generateReport(new ReportRequestEvent(reportId, LocalDateTime.now(), ContactTypeEnum.LOCATION));
 
         // Assert
         assertEquals(ReportStatus.FAILED, report.getStatus());

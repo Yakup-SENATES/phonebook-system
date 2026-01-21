@@ -1,6 +1,7 @@
 package com.phonebook_system.contact_service.repository;
 
 import com.phonebook_system.contact_service.entity.ContactInfoEntity;
+import com.phonebook_system.contact_service.model.ContactTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,8 @@ public interface ContactInfoRepository extends JpaRepository<ContactInfoEntity, 
 
     @Query("SELECT DISTINCT c.value FROM ContactInfoEntity c WHERE c.type = 'LOCATION'")
     List<String> findAllUniqueLocations();
+
+    List<ContactInfoEntity> findAllByType(ContactTypeEnum type);
 
     @Query("SELECT COUNT(DISTINCT c.person.id) FROM ContactInfoEntity c WHERE c.type = 'LOCATION' AND c.value = :location")
     Long countPersonsByLocation(String location);
