@@ -162,7 +162,7 @@ class ReportServiceTest {
         locationStatisticsResponse.setLocation("Adana");
         locationStatisticsResponse.setPersonCount(10L);
         locationStatisticsResponse.setPhoneNumberCount(20L);
-        locationStatisticListResponse.setLocationList(List.of(locationStatisticsResponse));
+        locationStatisticListResponse.setLocationStats(List.of(locationStatisticsResponse));
         BaseResponseModel<LocationStatisticListResponse> feignResponse = BaseResponseModel
                 .resultToResponse(locationStatisticListResponse);
 
