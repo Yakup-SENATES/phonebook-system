@@ -6,7 +6,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
 
-# Phonebook System (Telefon Rehberi Sistemi)
+# Phonebook System (Telefon Rehberi Sistemi)  TR/EN
 
 Bu proje, mikroservis mimarisi kullanılarak geliştirilmiş kapsamlı bir Telefon Rehberi ve Raporlama sistemidir.
 
@@ -345,7 +345,7 @@ Problem: "Address already in use"
 Proje ile ilgili sorularınız veya katkıda bulunmak için:
 
 - **Sorun Bildirimi:** GitHub Issues kullanın
-- **Geliştirici:** [İsim Soyisim]
+- **Geliştirici:** Yakup ŞENATEŞ
 - **Versiyon:** 1.0.0
 - **Lisans:** MIT License
 
@@ -674,6 +674,6 @@ Solution:
 For questions about the project or to contribute:
 
 - **Issue Reporting:** Use GitHub Issues
-- **Developer:** [Yakup ŞENATEŞ]
+- **Developer:** Yakup ŞENATEŞ
 - **Version:** 1.0.0
 - **License:** MIT License
